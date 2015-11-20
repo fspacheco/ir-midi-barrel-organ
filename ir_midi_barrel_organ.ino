@@ -44,12 +44,23 @@
 #include <SoftwareSerial.h>
 SoftwareSerial mySerial(2, 3); //Soft TX on 3, we don't use RX in this code
 
+// Black - turn note ON.
+// White (paper) - turn OFF
+#define ON 0
+#define OFF 1
+
 byte note = 0; //The MIDI note value to be played
 byte resetMIDI = 4; //Tied to VS1053 Reset line
 byte ledPin = 13; //MIDI traffic inidicator
 byte pinGPIO1 = 7; //HIGH will activate MIDI
-byte pinCnote = 10;
-int instrument = 0;
+
+byte i;
+byte numNotes = 4; //number of notes
+byte instrument = 18; //18=rock organ
+byte pinNote[7]  = { 5,  6,  8,  9, 10,  11, 12};
+char noteName[7] = {'C','D','E','F','G','A', 'B'};
+byte noteMIDI[7] = { 48, 50, 52, 53, 55, 57, 59 };
+byte noteON[7]={OFF, OFF, OFF, OFF, OFF, OFF, OFF};
 
 void setup() {
   Serial.begin(57600);
@@ -57,7 +68,9 @@ void setup() {
   //Setup soft serial for MIDI control
   mySerial.begin(31250);
   
-  pinMode(pinCnote, INPUT);
+  for (i=0; i<numNotes; ++i) {
+     pinMode(pinNote[i], INPUT);
+  }
 
   pinMode(pinGPIO1, OUTPUT);
   digitalWrite(pinGPIO1,HIGH);
@@ -78,94 +91,28 @@ void loop() {
   //=================================================================
   Serial.println("Basic Instruments");
   talkMIDI(0xB0, 0, 0x00); //Default bank GM1
+  
+  Serial.print(" Instrument: ");
+  Serial.println(instrument, DEC);
 
-  //Change to different instrument
-  for(instrument = 0 ; instrument < 127 ; instrument++) {
+  talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
 
-    Serial.print(" Instrument: ");
-    Serial.println(instrument, DEC);
+  for (i=0; i<numNotes; ++i) {
+    if (digitalRead(pinNote[i])==ON) {
+       Serial.print(noteName[i]);
+       if (noteON[i]==OFF) {
+         noteOn(0, noteMIDI[i], 120);
+         noteON[i]=ON;
+         delay(5);
+       }
 
-    talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
-
-    //Play notes from F#-0 (30) to F#-5 (90):
-    for (note = 30 ; note < 40 ; note++) {
-      Serial.print("N:");
-      Serial.println(note, DEC);
-      
-      //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
-      noteOn(0, note, 60);
-      delay(50);
-
-      //Turn off the note with a given off/release velocity
-      noteOff(0, note, 60);
-      delay(50);
     }
-
-    delay(100); //Delay between instruments
-  }
-  //=================================================================
-
-  //Demo GM2 / Fancy sounds
-  //=================================================================
-  Serial.println("Demo Fancy Sounds");
-  talkMIDI(0xB0, 0, 0x78); //Bank select drums
-
-  //For this bank 0x78, the instrument does not matter, only the note
-  for(instrument = 30 ; instrument < 31 ; instrument++) {
-
-    Serial.print(" Instrument: ");
-    Serial.println(instrument, DEC);
-
-    talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
-
-    //Play fancy sounds from 'High Q' to 'Open Surdo [EXC 6]'
-    for (note = 27 ; note < 87 ; note++) {
-      Serial.print("N:");
-      Serial.println(note, DEC);
-      
-      //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
-      noteOn(0, note, 60);
-      delay(50);
-
+    else {
+      noteON[i]=OFF;
       //Turn off the note with a given off/release velocity
-      noteOff(0, note, 60);
-      delay(50);
+      noteOff(0, noteMIDI[i], 60);
     }
-
-    delay(100); //Delay between instruments
-  }
-
-  //Demo Melodic
-  //=================================================================
-  Serial.println("Demo Melodic? Sounds");
-  talkMIDI(0xB0, 0, 0x79); //Bank select Melodic
-  //These don't sound different from the main bank to me
-
-  //Change to different instrument
-  for(instrument = 27 ; instrument < 87 ; instrument++) {
-
-    Serial.print(" Instrument: ");
-    Serial.println(instrument, DEC);
-
-    talkMIDI(0xC0, instrument, 0); //Set instrument number. 0xC0 is a 1 data byte command
-
-    //Play notes from F#-0 (30) to F#-5 (90):
-    for (note = 30 ; note < 40 ; note++) {
-      Serial.print("N:");
-      Serial.println(note, DEC);
-      
-      //Note on channel 1 (0x90), some note value (note), middle velocity (0x45):
-      noteOn(0, note, 60);
-      delay(50);
-
-      //Turn off the note with a given off/release velocity
-      noteOff(0, note, 60);
-      delay(50);
-    }
-
-    delay(100); //Delay between instruments
-  }
-
+  }  
 }
 
 //Send a MIDI note-on message.  Like pressing a piano key
