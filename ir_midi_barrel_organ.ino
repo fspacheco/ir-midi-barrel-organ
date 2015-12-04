@@ -1,5 +1,5 @@
 /**************************************************
- Infrared MIDI Barrel Organ (Realejo infravermelho)
+ Infrared MIDI Barrel Organ (Pianola infravermelha)
  Fernando S. Pacheco
  2015-11-20
  
@@ -15,49 +15,34 @@
  This code controls the VS1053 in what is called Real Time MIDI mode. To get the VS1053 into RT MIDI mode, power up
  the VS1053 with GPIO0 tied low, GPIO1 tied high.
  
- I use the NewSoftSerial library to send out the MIDI serial at 31250bps. This allows me to print regular messages
+ I (Nathan) use the NewSoftSerial library to send out the MIDI serial at 31250bps. This allows me to print regular messages
  for debugging to the terminal window. This helped me out a ton.
  
  5V : VS1053 VCC
  GND : VS1053 GND
  D3 (SoftSerial TX) : VS1053 RX
  D4 : VS1053 RESET
- D7: GPIO1
+ D5: GPIO1
  
- D10: C note
- 
- Attach a headphone breakout board to the VS1053:
- VS1053 LEFT : TSH
- VS1053 RIGHT : RSH
- VS1053 GBUF : GND
- 
- When in the drum bank (0x78), there are not different instruments, only different notes.
- To play the different sounds, select an instrument # like 5, then play notes 27 to 87.
- 
- To play "Sticks" (31):
- talkMIDI(0xB0, 0, 0x78); //Bank select: drums
- talkMIDI(0xC0, 5, 0); //Set instrument number
- //Play note on channel 1 (0x90), some note value (note), middle velocity (60):
- noteOn(0, 31, 60);
- 
- */
+***************************************/
+
 #include <SoftwareSerial.h>
 SoftwareSerial mySerial(2, 3); //Soft TX on 3, we don't use RX in this code
 
-// Black - turn note ON.
+// When infrared sensor "reads" Black - turn note ON.
 // White (paper) - turn OFF
 #define ON 0
 #define OFF 1
 
 byte note = 0; //The MIDI note value to be played
 byte resetMIDI = 4; //Tied to VS1053 Reset line
-byte ledPin = 13; //MIDI traffic inidicator
-byte pinGPIO1 = 7; //HIGH will activate MIDI
+byte ledPin = 13; //MIDI traffic indicator
+byte pinGPIO1 = 5; //HIGH will activate MIDI
 
 byte i;
-byte numNotes = 4; //number of notes
+byte numNotes = 7; //number of notes
 byte instrument = 18; //18=rock organ
-byte pinNote[7]  = { 5,  6,  8,  9, 10,  11, 12};
+byte pinNote[7]  = { 6,  7,  8,  9, 10,  11, 12};
 char noteName[7] = {'C','D','E','F','G','A', 'B'};
 byte noteMIDI[7] = { 48, 50, 52, 53, 55, 57, 59 };
 byte noteON[7]={OFF, OFF, OFF, OFF, OFF, OFF, OFF};
@@ -87,8 +72,6 @@ void loop() {
 
   talkMIDI(0xB0, 0x07, 120); //0xB0 is channel message, set channel volume to near max (127)
 
-  //Demo Basic MIDI instruments, GM1
-  //=================================================================
   Serial.println("Basic Instruments");
   talkMIDI(0xB0, 0, 0x00); //Default bank GM1
   
@@ -139,8 +122,4 @@ void talkMIDI(byte cmd, byte data1, byte data2) {
 
   digitalWrite(ledPin, LOW);
 }
-
-
-
-
 
