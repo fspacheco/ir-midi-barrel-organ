@@ -3,10 +3,10 @@ Audio is produced by a MIDI synthesizer (VS1053).
 An Arduino reads 7 infrared sensors and sends commands to the synthesizer.
 
 Photos at:
-https://picasaweb.google.com/101294312921190812200/20151123OficinasAlunosDaEscolaHerondina#6220460098691719650
+https://get.google.com/albumarchive/101294312921190812200/album/AF1QipNDGdLcQnKQLz0fyBvtNgFNzOoKETORXWbTk-mi
 
 Video at:
-https://picasaweb.google.com/101294312921190812200/20151123OficinasAlunosDaEscolaHerondina#6220852786841285042
+https://get.google.com/albumarchive/101294312921190812200/album/AF1QipNDGdLcQnKQLz0fyBvtNgFNzOoKETORXWbTk-mi/AF1QipOSwk6BFrmVYDec0nWjopAMj7IsUPxptfLMNuUY
 
 Fernando S. Pacheco - 2015
 
